@@ -36,6 +36,10 @@ class Merchant(object):  # Each Merchant instance holds a single trade?
         else:
             return 'fail'
 
+    def log_state(self):
+        print('state: ' + self.state + ', funds: ' + str(self.available_funds) + ', stock: '
+              + str(self.stock_holding))
+
 
 # Strategy logic
 def strategy_buy(available_funds):
@@ -69,14 +73,7 @@ for x in range(20):
     if session.state == 'hold' and strategy_sell(session.stock_holding) and session.execute_trade('sell') == 'success':
         session.sell()
 
-    print('state: ' + session.state + ', funds: ' + str(session.available_funds) + ', stock: ' + str(session.stock_holding))
-
-print(session.state)
-
-
-# Can freeze/pickle trading instance
-# This could be a method
-
-#Fake ticker stream
+    session.log_state()
 
 print('Finished simulation')
+session.log_state()
