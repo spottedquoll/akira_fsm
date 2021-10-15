@@ -15,7 +15,8 @@ transitions = [
                 ]
 
 
-class Merchant(object):  # Each Merchant instance holds a single trade?
+# Each Merchant instance holds a single trade instance?
+class Merchant(object):
 
     def __init__(self):
         self.available_funds = 10

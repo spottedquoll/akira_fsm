@@ -1,9 +1,8 @@
-from transitions import Machine
 import random
 import pickle
 from utils import random_walk_next_step
 from strategies import strategy_ltma
-from merchant_methods import m_states, m_transitions
+from merchant_methods import Merchant, log_state
 
 # A fake ticker stream is created by modeling the stock price as a random walk
 # Two machine instances. What are trading rounds called? Sessions? phase/loop
@@ -20,36 +19,35 @@ buffer = 10
 ticker = [initial_pos]
 
 # Initialise the bank
-available_funds = 1000
+available_funds = 10000
 
-
-# Initialise the Merchant class
-class Merchant(object):
-
-    def __init__(self):
-        self.stock_holding = 0
-
-        # Initialize the state machine
-        self.machine = Machine(model=self, states=m_states(), transitions=m_transitions(), initial='idle')
-
-
-#  machine (each Merchant instance holds a single trading session?)
-session = Merchant()
-machine = Machine(session, states=m_states(), )
+# Machine (each Merchant instance holds a single trading session?)
+machine = Merchant()
+machine.scan()  # Transition machine to discover state
 
 # Run simulation
-for t in range(500):
+print('Starting simulation')
 
-    # Next step
-    next_step = random_walk_next_step(ticker[-1], floor, ceiling, step_size)
-    ticker.append(next_step)
+for t in range(1000):
+
+    # Generate next step in stock price random walk
+    current_price = random_walk_next_step(ticker[-1], floor, ceiling, step_size)
+    ticker.append(current_price)
 
     if t > buffer:
 
         decision = strategy_ltma(ticker, machine)
 
-        print(str(next_step))
+        if decision is not None:
+            available_funds = machine.execute_trade(decision, available_funds, current_price)
 
+# Force sell at end of trading
+if machine.state == 'hold':
+    available_funds = machine.execute_trade('sell', available_funds, ticker[-1])
+
+machine.pause()
+
+print('Available funds: ' + str(available_funds))
 
 #
 #
