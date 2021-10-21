@@ -49,13 +49,5 @@ machine.pause()
 
 print('Available funds: ' + str(available_funds))
 
-#
-#
-# # Can freeze/pickle trading instance
-# # store the machine
-# dump = pickle.dumps(m)
-#
-# # load the Machine instance again
-# m2 = pickle.loads(dump)
 
 print('Finished simulation')

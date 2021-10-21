@@ -37,6 +37,9 @@ class Merchant(object):
 
     # Execute the trade
     def execute_trade(self, action, available_funds, current_price):
+        """
+            This method should receive some confirmation from the platform that trade was successful
+        """
 
         if action == 'buy':
             units_to_buy = comptroller(current_price, available_funds)
@@ -49,6 +52,7 @@ class Merchant(object):
             available_funds = available_funds + self.stock_holding * current_price
             self.stock_holding = 0
             self.sell()
+            self.sell_price = current_price
         else:
             raise ValueError('Unknown action')
 
