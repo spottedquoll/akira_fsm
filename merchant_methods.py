@@ -1,10 +1,12 @@
 from math import floor
+
+import numpy as np
 from transitions import Machine
 from uuid import uuid4
 
 
 def log_state(machine):
-    print('state: ' + machine.state + ', stock: ' + str(machine.stock_holding))
+    print('state: ' + machine.state + ', stock: ' + str(machine.stock_holding) + ' units')
 
 
 # Define states
@@ -17,9 +19,7 @@ def m_transitions():
 
     return [{'trigger': 'scan', 'source': 'idle', 'dest': 'discover'},  # start discovery
             {'trigger': 'buy', 'source': 'discover', 'dest': 'hold'},  # after buying go to hold
-            {'trigger': 'sell', 'source': 'hold', 'dest': 'discover'},
-            {'trigger': 'buy', 'source': 'hold', 'dest': 'hold'},  # buy more from hold
-            {'trigger': 'pause', 'source': '*', 'dest': 'idle'},
+            {'trigger': 'sell', 'source': 'hold', 'dest': 'idle'}  # trading is finished after a sell
             ]
 
 
@@ -27,8 +27,10 @@ def m_transitions():
 class Merchant(object):
 
     def __init__(self):
-        self.stock_holding = 0
-        self.id = str(uuid4())
+
+        self.stock_holding = 0  # Current stock holding (count of units)
+        self.stock_holding_past = 0  # Previous stock holding, before any sales (count of units)
+        self.id = str(uuid4())  #
         self.buy_price = None
         self.sell_price = None
 
@@ -46,13 +48,15 @@ class Merchant(object):
             if units_to_buy > 0:
                 available_funds = available_funds - units_to_buy * current_price
                 self.stock_holding += units_to_buy
-                self.buy()
                 self.buy_price = current_price
+                self.buy()
         elif action == 'sell':
-            available_funds = available_funds + self.stock_holding * current_price
-            self.stock_holding = 0
-            self.sell()
-            self.sell_price = current_price
+            if self.stock_holding > 0:
+                available_funds = available_funds + self.stock_holding * current_price
+                self.stock_holding_past = self.stock_holding
+                self.stock_holding = 0
+                self.sell_price = current_price
+                self.sell()
         else:
             raise ValueError('Unknown action')
 
@@ -69,3 +73,17 @@ def comptroller(current_price, available_funds, max_individual_holding=0.3):
 
     return max_affordable_units
 
+
+def calculate_return(units, buy_price, sell_price):
+
+    assert units > 0
+
+    value_at_purchase = units*buy_price
+    value_at_sale = units*sell_price
+
+    absolute_return = value_at_sale - value_at_purchase
+    relative_return = absolute_return/value_at_purchase
+
+    assert np.isfinite(absolute_return) and np.isfinite(relative_return)
+
+    return absolute_return, relative_return

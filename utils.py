@@ -19,7 +19,6 @@ def write_pickle(fname, obj_to_write):
         pickle.dump(obj_to_write, f)
 
 
-
 def read_pickle(fname):
 
     with open(fname, 'rb') as pickle_file:

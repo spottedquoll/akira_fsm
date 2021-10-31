@@ -1,6 +1,4 @@
-# ISA
-env.mat
-*.asv
+/fsm_objects/
 
 # User-specific stuff
 .idea/**/workspace.xml
